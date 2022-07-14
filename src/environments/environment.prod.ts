@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  userApiUrl: 'https://random-data-api.com/api/'
 };
