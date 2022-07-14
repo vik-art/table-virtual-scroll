@@ -2,35 +2,23 @@
   <thead>
     <tr>
       <td>№</td>
-      <td>Name</td>
-      <td>Online</td>
       <td>Avatar</td>
+      <td>Name</td>
+      <td>Email</td>
+      <td>Date of birth</td>
+      <td>Employment</td>
+      <td>Key skill</td>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-    </tr>
-    <tr>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-    </tr>
-    <tr>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-    </tr>
-    <tr>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
-      <td>Some text or picture</td>
+    <tr *ngFor="let user of users let idx = index">
+      <td>{{idx + 1}}</td>
+      <td><img src="{{user.avatar}}" alt="" class="user-avatar"></td>
+      <td>{{user.first_name}} {{user.last_name}}</td>
+      <td>{{user.email}}</td>
+      <td>{{user.date_of_birth | date}}</td>
+      <td>{{user.employment.title}}</td>
+      <td>{{user.employment.key_skill}}</td>
     </tr>
   </tbody>
 </table>
