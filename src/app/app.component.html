@@ -10,7 +10,7 @@
       <td>Key skill</td>
     </tr>
   </thead>
-  <tbody>
+  <tbody #container>
     <tr *ngFor="let user of users let idx = index">
       <td>{{idx + 1}}</td>
       <td><img src="{{user.avatar}}" alt="" class="user-avatar"></td>
