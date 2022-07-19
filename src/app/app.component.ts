@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fromEvent, debounceTime, Subject, takeUntil } from 'rxjs';
+
 import { User } from './common/user.interface';
 import { UserService } from './service/user.service';
 
