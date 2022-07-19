@@ -1,5 +1,5 @@
 import { Component, OnInit,} from '@angular/core';
-import { take, fromEvent, of, Subscription, debounceTime } from 'rxjs';
+import { fromEvent, debounceTime } from 'rxjs';
 import { User } from './common/user.interface';
 import { UserService } from './service/user.service';
 
@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
   private restUsers: Array<User> = [];
   private prevUsers: Array<User> = [];
   private count: number = 12;
-  private scroll$: Subscription | undefined;
+  private startScrollPosition: number = 0;
 
   constructor(private userService: UserService) {
   }
@@ -25,11 +25,14 @@ export class AppComponent implements OnInit {
   }
 
   private handleScrollDirection() {
-    this.scroll$ = fromEvent(window, 'scroll').pipe(debounceTime(1000)).subscribe(_ => {
-      if (window.scrollY) {
-        window.scroll(0, 0);
+    fromEvent(window, 'scroll').pipe(debounceTime(1500)).subscribe(_ => {
+      const currentPosition = window.scrollY;
+      if (currentPosition > this.startScrollPosition && currentPosition > 50) {
+        window.scroll(0, 50);
         this.getNextUsers();
-      } 
+      } else if (currentPosition < 50) {
+        this.renderedUsers = this.prevUsers;
+      }
     });
   }
 
