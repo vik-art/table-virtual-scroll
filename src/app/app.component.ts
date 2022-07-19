@@ -1,10 +1,5 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { fromEvent, debounceTime, Subject, takeUntil } from 'rxjs';
 import { User } from './common/user.interface';
 import { UserService } from './service/user.service';
 
@@ -13,29 +8,63 @@ import { UserService } from './service/user.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, AfterViewInit {
-  public users: Array<User> = [];
+export class AppComponent implements OnInit, OnDestroy {
   public renderedUsers: Array<User> = [];
-  private count: number = 12;
   private total: Array<User> = [];
-
-  @ViewChild('container') container!: ElementRef;
+  private restUsers: Array<User> = [];
+  private prevUsers: Array<User> = [];
+  private count: number = 15;
+  private startScrollPosition: number = 0;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(private userService: UserService) {}
-  ngAfterViewInit(): void {
-  }
 
   ngOnInit(): void {
-   this.getUsers()
+    this.getUsers();
+    this.handleScrollDirection();
+  }
+
+  private handleScrollDirection() {
+    fromEvent(window, 'scroll')
+      .pipe(debounceTime(1500), takeUntil(this.destroy$))
+      .subscribe(() => {
+        const currentPosition = window.scrollY;
+        if (currentPosition > this.startScrollPosition) {
+          window.scroll(0, 100);
+          console.log(currentPosition);
+          this.getNextUsers();
+        }
+      });
   }
 
   private getUsers() {
-    this.userService.getUsers().subscribe(res => {
-      this.total = res;
-      for (let i = 0; i <= this.count; i++) {
-        this.users.push(res[i]);
-      }
-      this.total = this.total.filter(el => !this.users.includes(el));
-    });
+    this.userService
+      .getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.total = res;
+        for (let i = 0; i <= this.count; i++) {
+          this.renderedUsers.push(res[i]);
+        }
+        this.restUsers = this.total.filter(
+          (el) => !this.renderedUsers.includes(el)
+        );
+        this.count = 15;
+      });
+  }
+
+  private getNextUsers() {
+    this.prevUsers = this.renderedUsers;
+    this.renderedUsers = [];
+    for (let i = 0; i < this.count; i++) {
+      this.renderedUsers.push(this.restUsers[i]);
+      this.restUsers = this.restUsers.filter(
+        (el) => !this.renderedUsers.includes(el)
+      );
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next(true);
   }
 }
