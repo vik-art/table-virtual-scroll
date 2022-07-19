@@ -1,10 +1,5 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, OnInit,} from '@angular/core';
+import { takeLast, fromEvent, of, Subscription } from 'rxjs';
 import { User } from './common/user.interface';
 import { UserService } from './service/user.service';
 
@@ -13,29 +8,52 @@ import { UserService } from './service/user.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, AfterViewInit {
-  public users: Array<User> = [];
+export class AppComponent implements OnInit {
   public renderedUsers: Array<User> = [];
-  private count: number = 12;
   private total: Array<User> = [];
+  private restUsers: Array<User> = [];
+  private prevUsers: Array<User> = [];
+  private count: number = 12;
+  scroll$: Subscription | undefined;
+  startPosition: number = 0;
 
-  @ViewChild('container') container!: ElementRef;
-
-  constructor(private userService: UserService) {}
-  ngAfterViewInit(): void {
+  constructor(private userService: UserService) {
   }
 
   ngOnInit(): void {
-   this.getUsers()
+    this.getUsers();
+    this.handleScrollDirection();
   }
 
-  private getUsers() {
-    this.userService.getUsers().subscribe(res => {
-      this.total = res;
-      for (let i = 0; i <= this.count; i++) {
-        this.users.push(res[i]);
-      }
-      this.total = this.total.filter(el => !this.users.includes(el));
+  private handleScrollDirection() {
+    this.startPosition = window.scrollY;
+    this.scroll$ = fromEvent(window, 'scroll').subscribe(_ => {
+      if (window.scrollY) {
+        window.scroll(0, 0);
+        this.getNextUsers();
+      }  
     });
   }
+
+
+  private getUsers() {
+    this.userService.getUsers().subscribe((res) => {
+      this.total = res;
+      for (let i = 0; i <= this.count; i++) {
+        this.renderedUsers.push(res[i]);
+      }
+      this.restUsers = this.total.filter(el => !this.renderedUsers.includes(el)
+      );
+      this.count = 12;
+    });
+  }
+
+  private getNextUsers() {
+    this.prevUsers = this.renderedUsers;
+    this.renderedUsers = [];
+      for (let i = 0; i < this.count; i++) {
+        this.renderedUsers.push(this.restUsers[i]);
+      this.restUsers = this.restUsers.filter(el => !this.renderedUsers.includes(el));
+    }
+  }  
 }
